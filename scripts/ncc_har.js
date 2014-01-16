@@ -160,8 +160,13 @@ function drawWaterfall(hardata,targetdiv)
 	options.chart.width = getViewportWidth() - 100;
 	options.title.text = "Component Timing Breakdown<br>" +  harfile.log.entries[0].request.url;
 	
+	var x = 0;
+	
 	$.each(harfile.log.entries, function(i, val) {
 		if (val.request.url.substring(0,4) != "data" && val.request.url.substring(0,6) != "chrome") {
+			
+			x++;
+			
 			options.xAxis.categories.push(TruncateURL(val.request.url));
 			
 			options.series[0].data.push(SanitiseTimings(val.timings.receive));
@@ -177,7 +182,26 @@ function drawWaterfall(hardata,targetdiv)
 			
 			var totalTime = SanitiseTimings(val.timings.receive) + SanitiseTimings(val.timings.wait) + SanitiseTimings(val.timings.send) + SanitiseTimings(val.timings.ssl) + SanitiseTimings(val.timings.connect) + SanitiseTimings(val.timings.dns);
 			
-			$('#logs').append("<tr><td title='" + val.request.url + "'>" + TruncateURL(val.request.url) + "&nbsp;&nbsp;<a href='"+ val.request.url + "' target='_blank'><img src='./images/openpopup.png' alt='" + val.request.url + "'/></a></td><td>"+ SanitiseSize(val.response.bodySize) + "</td><td>"+ SanitiseSize(val.response.content.size) + "</td><td>" + SanitiseSize(val.request.headersSize) + "</td><td>" + SanitiseSize(val.request.bodySize) + "</td><td>" + SanitiseSize(val.response.headersSize) + "</td><td>" + SanitiseTimings(offset) + "</td><td>" + SanitiseTimings(val.timings.dns) + "</td><td>" + SanitiseTimings(val.timings.connect) + "</td><td>" + SanitiseTimings(val.timings.ssl) + "</td><td>" + SanitiseTimings(val.timings.send) + "</td><td>" + SanitiseTimings(val.timings.wait) + "</td><td>" + SanitiseTimings(val.timings.receive) + "</td><td>" + Math.round(totalTime * 1000) / 1000 + "</td><td>" + val.response.status + "</td><td>x</td></tr>");
+			$('#logs').append("<tr><td title='" + val.request.url + "'>" + TruncateURL(val.request.url) + "&nbsp;&nbsp;<a href='"+ val.request.url + "' target='_blank'><img src='./images/openpopup.png' alt='" + val.request.url + "'/></a></td><td>"+ SanitiseSize(val.response.bodySize) + "</td><td>"+ SanitiseSize(val.response.content.size) + "</td><td>" + SanitiseSize(val.request.headersSize) + "</td><td>" + SanitiseSize(val.request.bodySize) + "</td><td>" + SanitiseSize(val.response.headersSize) + "</td><td>" + SanitiseTimings(offset) + "</td><td>" + SanitiseTimings(val.timings.dns) + "</td><td>" + SanitiseTimings(val.timings.connect) + "</td><td>" + SanitiseTimings(val.timings.ssl) + "</td><td>" + SanitiseTimings(val.timings.send) + "</td><td>" + SanitiseTimings(val.timings.wait) + "</td><td>" + SanitiseTimings(val.timings.receive) + "</td><td>" + Math.round(totalTime * 1000) / 1000 + "</td><td>" + val.response.status + "</td><td><a onclick=\"$( '#diag_" + x +"' ).dialog();\"><img src='images/diagnostics_on.gif' alt='Diagnostics'></a></td></tr>");
+			
+			//Build the diags box...
+			var diagsText = "";
+			diagsText = diagsText + "<p class='diagsHeader'>Request</p>";
+			diagsText = diagsText + "<table>";
+			$.each(val.request.headers, function(j, cont) {
+				diagsText = diagsText + "<tr><td class='diagsName'>" + cont.name + "</td><td class='diagsValue'>" + cont.value + "</td></tr>";
+			});
+			diagsText = diagsText + "</table>";
+			
+			diagsText = diagsText + "<p class='diagsHeader'>Response</p>";
+			diagsText = diagsText + "<table>";
+			$.each(val.response.headers, function(j, cont) {
+				diagsText = diagsText + "<tr><td class='diagsName'>" + cont.name + "</td><td class='diagsValue'>" + cont.value + "</td></tr>";
+			});
+			diagsText = diagsText + "</table>";
+			
+			$('body').append('<div id="diag_'+ x + '" title="Diagnostics for ' + val.request.url +'" style="display: none;"><p>' + diagsText + '</p></div>');
+		
 		}
 	});
 	
