@@ -1,0 +1,82 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN"
+"http://www.w3.org/TR/html4/strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<title>index</title>
+		<meta name="author" content="ghughes188" />
+		<link rel="stylesheet" href="styles/style.css" type="text/css" media="screen" charset="utf-8"/>
+		<script type="text/javascript" src="scripts/jquery.min.js"></script>
+		<script type="text/javascript" src="scripts/highcharts.js"></script>
+		<script type="text/javascript" src="scripts/exporting.js"></script>
+		<script type="text/javascript" src="scripts/ncc_har.js"></script>
+	</head>
+	<body onload="document.getElementById('timingsTable').style.display='none';">
+
+		<h1>NCC Group Web Performance</h1>
+		<h2>HAR file viewer</h2>
+		<p>Drag &amp; drop your HAR file here...</p>
+
+		<div id="MyChart"></div>
+		<p>&nbsp;</p>
+		<div id="timingsTable">	
+	    <table id="logs" border="1">
+			<thead>
+				<tr>
+					<th>Object URL</th>
+					<th>Trans.</th>
+					<th>Uncomp.</th>
+					<th>Req. Header</th>
+					<th>Req. Content</th>
+					<th>Resp. Header</th>
+					<th>Offset</th>
+					<th>DNS</th>
+					<th>Connect</th>
+					<th>SSL Conn.</th>
+					<th>Req. Sent</th>
+					<th>Data Start</th>
+					<th>Content</th>
+					<th>Total</th>
+					<th>Status</th>
+					<th>Diag</th>
+				</tr>
+			</thead>   
+	    </table>
+	    </div>
+		
+		<script type="text/javascript">
+
+		    window.ondragover = function () {
+		        return false;
+		    };
+		    window.ondragend = function () {
+		        return false;
+		    };
+		
+		    window.ondrop = function (e) {
+		        e.stopPropagation();
+		        e.preventDefault();
+		        
+		        $('#MyChart').empty();
+		
+		        var file = e.dataTransfer.files[0];
+		        var reader = new FileReader();
+		        reader.onload = function (event) {
+		            var data = event.target.result;
+		            try {
+						drawWaterfall(data,"MyChart");
+		            }
+		            catch(e) {
+		                alert(e);
+		            }
+		
+		        };
+		        reader.readAsText(file);
+		        return false;
+		    };
+		</script>
+		
+	</body>
+</html>
+

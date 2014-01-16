@@ -1,0 +1,87 @@
+body {
+	font-family: Arial, Garuda, sans-serif;
+	font-size: 10px;
+	font-style: normal;
+	font-variant: normal;
+}
+
+table#logs {
+	border-collapse: collapse;
+	border: 1px solid black;
+	width: 90%;
+	margin-left: 50px;
+}
+
+table#logs th {
+	/* Table header */
+	background-attachment: scroll;
+	background-clip: border-box;
+	background-color: rgb(67, 67, 67);
+	background-image: none;
+	background-origin: padding-box;
+	background-size: auto;
+	border-bottom-color: rgb(0, 0, 0);
+	border-bottom-style: solid;
+	border-bottom-width: 1px;
+	border-left-color: rgb(0, 0, 0);
+	border-left-style: none;
+	border-left-width: 0px;
+	border-right-color: rgb(255, 255, 255);
+	border-right-style: solid;
+	border-right-width: 1px;
+	border-top-color: rgb(255, 255, 255);
+	border-top-style: none;
+	border-top-width: 0px;
+	border-collapse: separate;
+	color: rgb(255, 255, 255);
+	display: table-cell;
+	font-size: 10px;
+	font-weight: bold;
+	height: 23px;
+	line-height: 10px;
+	margin: 0px;
+	padding: 0px;
+	text-align: left;
+	text-indent: 5px;
+	vertical-align: middle;
+}
+
+table#logs td {
+	/* Table data */
+	border-width: 1px;
+	border-style: solid;
+	border-collapse: separate;
+	border-bottom-color: rgb(227, 228, 221);
+	border-left-color: rgb(243, 238, 226);
+	border-right-color: rgb(172, 172, 172);
+	border-top-color: rgb(255, 255, 255);
+	color: rgb(67, 67, 67);
+	display: table-cell;
+	font-size: 11px;
+	height: 18px;
+	line-height: 10px;
+	margin: 0px;
+	padding: 5px;
+	text-align: left;
+	vertical-align: middle;
+}
+
+table#logs tbody tr:hover {
+	background-color: lightgrey;
+}
+
+table#logs tr:nth-child(odd){ 
+		background: #ffffff;
+	}
+
+
+table#logs tr:nth-child(even){
+		background: rgb(253, 252, 247);
+	}
+
+
+div#MyChart {
+	margin-left: 50px;
+	margin-right: 50px;
+	text-align: center;
+}
