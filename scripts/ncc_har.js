@@ -200,7 +200,7 @@ function drawWaterfall(hardata,targetdiv)
 			});
 			diagsText = diagsText + "</table>";
 			
-			$('body').append('<div id="diag_'+ x + '" title="Diagnostics for ' + val.request.url +'" style="display: none;"><p>' + diagsText + '</p></div>');
+			$('body').append('<div id="diag_'+ x + '" title="Diagnostics for ' + val.request.url +'" style="display: none; width=250px;"><p>' + diagsText + '</p></div>');
 		
 		}
 	});
