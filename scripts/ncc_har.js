@@ -62,10 +62,8 @@ function drawWaterfall(hardata,targetdiv)
 
 	var options = {
     	'chart':{
-			'renderTo':'MyChart',
 			'zoomType':'xy',
 			'defaultSeriesType':'bar',
-			'width':880
 			},
 		'exporting':{
 			'enabled':true
@@ -147,7 +145,7 @@ function drawWaterfall(hardata,targetdiv)
       	{
          	'name':'Offset',
          	'pointWidth':0,
-         	'color':'#000000',
+         	'color':'#FFFFFF',
          	'data':[]
         }
         ]
@@ -199,6 +197,22 @@ function drawWaterfall(hardata,targetdiv)
 				diagsText = diagsText + "<tr><td class='diagsName'>" + cont.name + "</td><td class='diagsValue'>" + cont.value + "</td></tr>";
 			});
 			diagsText = diagsText + "</table>";
+			
+			if ("text" in val.response.content){
+				diagsText = diagsText + "<p class='diagsHeader'>Content</p>";
+				
+				if(val.response.content.mimeType.substring(0,4) == "text") {
+					HTMLoutput = val.response.content.text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+					diagsText = diagsText + "<pre>" + HTMLoutput + "</pre>";
+				}
+				
+				if(val.response.content.mimeType.substring(0,5) == "image") {
+					HTMLoutput = '<img src="data:' + val.response.content.mimeType + ';base64,' + val.response.content.text + '">';
+					diagsText = diagsText + "<p>" + HTMLoutput + "</p>"; 	
+				}
+				
+				
+			}
 			
 			$('body').append('<div id="diag_'+ x + '" title="Diagnostics for ' + val.request.url +'" style="display: none; width=250px;"><p>' + diagsText + '</p></div>');
 		
