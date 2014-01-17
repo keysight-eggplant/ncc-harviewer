@@ -94,8 +94,9 @@ function drawWaterfall(hardata,targetdiv)
 			'series':{
 				'stacking':'normal',
 				'shadow':false,
-				'border':0,
-				'animation':false
+				'borderWidth':0,
+				'animation':false,
+				'pointPadding':0
 				}
 			},
 		'yAxis':{
@@ -180,7 +181,7 @@ function drawWaterfall(hardata,targetdiv)
 			
 			var totalTime = SanitiseTimings(val.timings.receive) + SanitiseTimings(val.timings.wait) + SanitiseTimings(val.timings.send) + SanitiseTimings(val.timings.ssl) + SanitiseTimings(val.timings.connect) + SanitiseTimings(val.timings.dns);
 			
-			$('#logs').append("<tr><td title='" + val.request.url + "'>" + TruncateURL(val.request.url) + "&nbsp;&nbsp;<a href='"+ val.request.url + "' target='_blank'><img src='./images/openpopup.png' alt='" + val.request.url + "'/></a></td><td>"+ SanitiseSize(val.response.bodySize) + "</td><td>"+ SanitiseSize(val.response.content.size) + "</td><td>" + SanitiseSize(val.request.headersSize) + "</td><td>" + SanitiseSize(val.request.bodySize) + "</td><td>" + SanitiseSize(val.response.headersSize) + "</td><td>" + SanitiseTimings(offset) + "</td><td>" + SanitiseTimings(val.timings.dns) + "</td><td>" + SanitiseTimings(val.timings.connect) + "</td><td>" + SanitiseTimings(val.timings.ssl) + "</td><td>" + SanitiseTimings(val.timings.send) + "</td><td>" + SanitiseTimings(val.timings.wait) + "</td><td>" + SanitiseTimings(val.timings.receive) + "</td><td>" + Math.round(totalTime * 1000) / 1000 + "</td><td>" + val.response.status + "</td><td><a onclick=\"$( '#diag_" + x +"' ).dialog();\"><img src='images/diagnostics_on.gif' alt='Diagnostics'></a></td></tr>");
+			$('#logs').append("<tr><td title='" + val.request.url + "'>" + TruncateURL(val.request.url) + "&nbsp;&nbsp;<a href='"+ val.request.url + "' target='_blank'><img src='./images/openpopup.png' alt='" + val.request.url + "'/></a></td><td>"+ SanitiseSize(val.response.bodySize) + "</td><td>"+ SanitiseSize(val.response.content.size) + "</td><td>" + SanitiseSize(val.request.headersSize) + "</td><td>" + SanitiseSize(val.request.bodySize) + "</td><td>" + SanitiseSize(val.response.headersSize) + "</td><td>" + SanitiseTimings(offset) + "</td><td>" + SanitiseTimings(val.timings.dns) + "</td><td>" + SanitiseTimings(val.timings.connect) + "</td><td>" + SanitiseTimings(val.timings.ssl) + "</td><td>" + SanitiseTimings(val.timings.send) + "</td><td>" + SanitiseTimings(val.timings.wait) + "</td><td>" + SanitiseTimings(val.timings.receive) + "</td><td>" + Math.round(totalTime * 1000) / 1000 + "</td><td>" + val.response.status + "</td><td><a onclick=\"$( '#diag_" + x +"' ).dialog({width:600, maxHeight:600});\"><img src='images/diagnostics_on.gif' alt='Diagnostics'></a></td></tr>");
 			
 			//Build the diags box...
 			var diagsText = "";
@@ -199,18 +200,18 @@ function drawWaterfall(hardata,targetdiv)
 			diagsText = diagsText + "</table>";
 			
 			if ("text" in val.response.content){
-				diagsText = diagsText + "<p class='diagsHeader'>Content</p>";
-				
+					
 				if(val.response.content.mimeType.substring(0,4) == "text") {
+					diagsText = diagsText + "<p class='diagsHeader'>Content</p>";
 					HTMLoutput = val.response.content.text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
 					diagsText = diagsText + "<pre>" + HTMLoutput + "</pre>";
 				}
 				
 				if(val.response.content.mimeType.substring(0,5) == "image") {
+					diagsText = diagsText + "<p class='diagsHeader'>Content</p>";
 					HTMLoutput = '<img src="data:' + val.response.content.mimeType + ';base64,' + val.response.content.text + '">';
 					diagsText = diagsText + "<p>" + HTMLoutput + "</p>"; 	
 				}
-				
 				
 			}
 			

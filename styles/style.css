@@ -79,9 +79,22 @@ table#logs tr:nth-child(even){
 		background: rgb(253, 252, 247);
 	}
 
-
 div#MyChart {
 	margin-left: 50px;
 	margin-right: 50px;
 	text-align: center;
+}
+
+.diagsHeader {
+	font-weight: bold;
+	background-color: lightgrey;	
+	padding: 3px;
+}
+
+.diagsName {
+	font-family: monospace;
+	font-weight: bold;
+}
+.diagsValue {
+	font-family: monospace;
 }
