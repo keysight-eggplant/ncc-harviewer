@@ -103,7 +103,19 @@ function drawWaterfall(hardata,targetdiv)
 			'title':{
 				'text':'Seconds'
 				},
-			},
+			'plotLines': [
+				{
+		            'color': 'red',
+		            'width': 1,
+		            'label':{}
+		        },
+	            {
+	            	'color': 'green',
+		            'width': 1,
+		            'label':{}	
+	            	
+	            }] 
+		},
 		'xAxis':{
 			'title':{
 				'text':'Objects'
@@ -158,6 +170,19 @@ function drawWaterfall(hardata,targetdiv)
 	options.chart.height = 200 + (harfile.log.entries.length * 25);
 	options.chart.width = getViewportWidth() - 100;
 	options.title.text = "Component Timing Breakdown<br>" +  harfile.log.entries[0].request.url;
+	
+	//onload
+	if ("onLoad" in harfile.log.pages[0].pageTimings){
+		options.yAxis.plotLines[0].value = SanitiseTimings(harfile.log.pages[0].pageTimings.onLoad);
+		options.yAxis.plotLines[0].label.text = "onLoad (" + SanitiseTimings(harfile.log.pages[0].pageTimings.onLoad) + ")";
+	}
+	
+	//renderstart (WPT)
+	if ("_startRender" in harfile.log.pages[0].pageTimings){
+		options.yAxis.plotLines[1].value = SanitiseTimings(harfile.log.pages[0].pageTimings._startRender);
+		options.yAxis.plotLines[1].label.text = "Render Start (" + SanitiseTimings(harfile.log.pages[0].pageTimings._startRender) + ")";
+	}
+	
 	
 	var x = 0;
 	
