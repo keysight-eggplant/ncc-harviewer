@@ -55,7 +55,7 @@ table#logs td {
 	border-left-color: rgb(243, 238, 226);
 	border-right-color: rgb(172, 172, 172);
 	border-top-color: rgb(255, 255, 255);
-	color: rgb(67, 67, 67);
+
 	display: table-cell;
 	font-size: 11px;
 	height: 18px;
@@ -68,6 +68,14 @@ table#logs td {
 
 table#logs tbody tr:hover {
 	background-color: lightgrey;
+}
+
+table#logs tr.non200 {
+	color: red;
+}
+
+table#logs tr {
+	color: rgb(67, 67, 67);
 }
 
 table#logs tr:nth-child(odd){ 

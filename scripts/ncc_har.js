@@ -196,8 +196,12 @@ function drawWaterfall(hardata,targetdiv)
 			options.series[0].data.push(SanitiseTimings(val.timings.receive));
 			options.series[1].data.push(SanitiseTimings(val.timings.wait));
 			options.series[2].data.push(SanitiseTimings(val.timings.send));
-			options.series[3].data.push(SanitiseTimings(val.timings.ssl));
-			options.series[4].data.push(SanitiseTimings(val.timings.connect));
+			if("ssl" in val.timings) {
+				options.series[3].data.push(SanitiseTimings(val.timings.ssl));
+				options.series[4].data.push(SanitiseTimings(val.timings.connect-val.timings.ssl));
+			} else{
+				options.series[4].data.push(SanitiseTimings(val.timings.connect));
+			}
 			options.series[5].data.push(SanitiseTimings(val.timings.dns));
 	
 			var startTime = new Date(val.startedDateTime);
@@ -206,7 +210,21 @@ function drawWaterfall(hardata,targetdiv)
 			
 			var totalTime = SanitiseTimings(val.timings.receive) + SanitiseTimings(val.timings.wait) + SanitiseTimings(val.timings.send) + SanitiseTimings(val.timings.ssl) + SanitiseTimings(val.timings.connect) + SanitiseTimings(val.timings.dns);
 			
-			$('#logs').append("<tr><td title='" + val.request.url + "'>" + TruncateURL(val.request.url) + "&nbsp;&nbsp;<a href='"+ val.request.url + "' target='_blank'><img src='./images/openpopup.png' alt='" + val.request.url + "'/></a></td><td>"+ SanitiseSize(val.response.bodySize) + "</td><td>"+ SanitiseSize(val.response.content.size) + "</td><td>" + SanitiseSize(val.request.headersSize) + "</td><td>" + SanitiseSize(val.request.bodySize) + "</td><td>" + SanitiseSize(val.response.headersSize) + "</td><td>" + SanitiseTimings(offset) + "</td><td>" + SanitiseTimings(val.timings.dns) + "</td><td>" + SanitiseTimings(val.timings.connect) + "</td><td>" + SanitiseTimings(val.timings.ssl) + "</td><td>" + SanitiseTimings(val.timings.send) + "</td><td>" + SanitiseTimings(val.timings.wait) + "</td><td>" + SanitiseTimings(val.timings.receive) + "</td><td>" + Math.round(totalTime * 1000) / 1000 + "</td><td>" + val.response.status + "</td><td><a onclick=\"$( '#diag_" + x +"' ).dialog({width:600, maxHeight:600});\"><img src='images/diagnostics_on.gif' alt='Diagnostics'></a></td></tr>");
+			if (val.response.status > 399) {
+				trFormat = '<tr class="non200">';
+			} else {
+				trFormat = '<tr>';
+			}
+			
+			
+			if("ssl" in val.timings) {
+				var NewConnectTime = val.timings.connect - val.timings.ssl;
+			} else{
+				var NewConnectTime = val.timings.connect;
+			}
+			
+			
+			$('#logs').append(trFormat + "<td title='" + val.request.url + "'>" + TruncateURL(val.request.url) + "&nbsp;&nbsp;<a href='"+ val.request.url + "' target='_blank'><img src='./images/openpopup.png' alt='" + val.request.url + "'/></a></td><td>"+ SanitiseSize(val.response.bodySize) + "</td><td>"+ SanitiseSize(val.response.content.size) + "</td><td>" + SanitiseSize(val.request.headersSize) + "</td><td>" + SanitiseSize(val.request.bodySize) + "</td><td>" + SanitiseSize(val.response.headersSize) + "</td><td>" + SanitiseTimings(offset) + "</td><td>" + SanitiseTimings(val.timings.dns) + "</td><td>" + SanitiseTimings(NewConnectTime) + "</td><td>" + SanitiseTimings(val.timings.ssl) + "</td><td>" + SanitiseTimings(val.timings.send) + "</td><td>" + SanitiseTimings(val.timings.wait) + "</td><td>" + SanitiseTimings(val.timings.receive) + "</td><td>" + Math.round(totalTime * 1000) / 1000 + "</td><td>" + val.response.status + "</td><td><a onclick=\"$( '#diag_" + x +"' ).dialog({width:600, maxHeight:600});\"><img src='images/diagnostics_on.gif' alt='Diagnostics'></a></td></tr>");
 			
 			//Build the diags box...
 			var diagsText = "";
