@@ -1,5 +1,9 @@
 /**
- * @author ghughes188
+ * NCC Web Performance HAR Viewer
+ * Requires: jQuery 1.8+, jQueryUI, Highcharts 3+
+ * 
+ * Version 2.0
+ * 
  */
 
 function SanitiseTimings(input){
@@ -56,215 +60,289 @@ function TruncateURL (inputURL) {
 	return TruncatedURL;	
 }
 
-function drawWaterfall(hardata,targetdiv)
-{
-	var harfile = $.parseJSON(hardata);
+function renderHAR(harfile){
+	
+	//Parse HAR file
+	var parsedHAR = $.parseJSON(harfile);
 
-	var options = {
-    	'chart':{
-			'zoomType':'xy',
-			'defaultSeriesType':'bar',
-			},
-		'exporting':{
-			'enabled':true
-			},
-		'title':{
-			'margin':60
-			},
-		'subtitle':{
-			'text':'',
-			'margin':10
-			},   
-		'legend':{
-			'align':'center',
-			'backgroundColor':'#FFFFFF',
-			'layout':'horizontal',
-			'reversed':true,
-			'y':-5
-			},
-		'credits':{
-			'enabled':true,
-			'href':'',
-			'position':{
-				'x':-15
-				},
-			'text':'Copyright NCC Group Website Performance'
-			},
-		'plotOptions':{
-			'series':{
-				'stacking':'normal',
-				'shadow':false,
-				'borderWidth':0,
-				'animation':false,
-				'pointPadding':0
-				}
-			},
-		'yAxis':{
-			'title':{
-				'text':'Seconds'
-				},
-			'plotLines': [
-				{
-		            'color': 'red',
-		            'width': 1,
-		            'label':{}
-		        },
-	            {
-	            	'color': 'green',
-		            'width': 1,
-		            'label':{}	
-	            	
-	            }] 
-		},
-		'xAxis':{
-			'title':{
-				'text':'Objects'
-				},
-			'categories': [],
-			'opposite':true
-		},
+	//declare HARpages obj
+	var HARpages = {pages: []};
+
+	//Loop log.pages -> array for each page (URL, timings, diags)
+	$.each(parsedHAR.log.pages, function(i,pagesdata) {
+		//initialise page object
+		var pages = { 
+			id: pagesdata.id,
+			objects: []
+		};
 		
-		'series':[
-			{
-		 	'name':'Content Download',
-         	'color':'#FF8500',
-         	'data':[]
-        },
-		{
-			'name':'Data Start',
-			'color':'#66B3FF',
-			'data':[]
-        },
-      	{
-        	'name':'Request Sent',
-        	'color':'#00FF00',
-         	'data':[]
-       	},
-        {
-         	'name':'SSL Connect',
-         	'color':'#FFCC33',
-         	'data':[]
-        },
-        {
-         	'name':'Connect',
-         	'color':'#995500',
-         	'data':[]
-        },
-        {
-         	'name':'DNS',
-         	'color':'#005CBB',
-         	'data':[]
-        },
-      	{
-         	'name':'Offset',
-         	'pointWidth':0,
-         	'color':'#FFFFFF',
-         	'data':[]
-        }
-        ]
-    };
-    	
-	var basetime = new Date(harfile.log.pages[0].startedDateTime);
+		//onload
+		if ("onLoad" in pagesdata.pageTimings){
+			pages.onLoadTime = SanitiseTimings(pagesdata.pageTimings.onLoad);
+		}
+		
+		//renderstart (WPT)
+		if ("_startRender" in pagesdata.pageTimings){
+			pages.RenderStartTime = SanitiseTimings(pagesdata.pageTimings._startRender);
+		}
 	
-    options.chart.renderTo = targetdiv;
-	options.chart.height = 200 + (harfile.log.entries.length * 25);
-	options.chart.width = getViewportWidth() - 100;
-	options.title.text = "Component Timing Breakdown<br>" +  harfile.log.entries[0].request.url;
-	
-	//onload
-	if ("onLoad" in harfile.log.pages[0].pageTimings){
-		options.yAxis.plotLines[0].value = SanitiseTimings(harfile.log.pages[0].pageTimings.onLoad);
-		options.yAxis.plotLines[0].label.text = "onLoad (" + SanitiseTimings(harfile.log.pages[0].pageTimings.onLoad) + ")";
-	}
-	
-	//renderstart (WPT)
-	if ("_startRender" in harfile.log.pages[0].pageTimings){
-		options.yAxis.plotLines[1].value = SanitiseTimings(harfile.log.pages[0].pageTimings._startRender);
-		options.yAxis.plotLines[1].label.text = "Render Start (" + SanitiseTimings(harfile.log.pages[0].pageTimings._startRender) + ")";
-	}
-	
-	
-	var x = 0;
-	
-	$.each(harfile.log.entries, function(i, val) {
-		if (val.request.url.substring(0,4) != "data" && val.request.url.substring(0,6) != "chrome") {
-			
-			x++;
-			
-			options.xAxis.categories.push(TruncateURL(val.request.url));
-			
-			options.series[0].data.push(SanitiseTimings(val.timings.receive));
-			options.series[1].data.push(SanitiseTimings(val.timings.wait));
-			options.series[2].data.push(SanitiseTimings(val.timings.send));
-			if("ssl" in val.timings) {
-				options.series[3].data.push(SanitiseTimings(val.timings.ssl));
-				options.series[4].data.push(SanitiseTimings(val.timings.connect-val.timings.ssl));
-			} else{
-				options.series[4].data.push(SanitiseTimings(val.timings.connect));
+		//get base time
+		var basetime = new Date(pagesdata.startedDateTime);
+		
+		//foreach log.entries in parsedHAR
+		$.each(parsedHAR.log.entries, function(j,entries) {		
+			//if log.entries.pageref == log.pages.id
+			if(entries.pageref == pagesdata.id){
+				
+				//calculate offset
+				var startTime = new Date(entries.startedDateTime);
+				var offset = startTime - basetime;
+				
+				//Correct Connect time value
+				if("ssl" in entries.timings) {
+					var NewConnectTime = SanitiseTimings(entries.timings.connect) - SanitiseTimings(entries.timings.ssl);
+				} else{
+					var NewConnectTime = SanitiseTimings(entries.timings.connect);
+				}
+				
+				//calculate totaltime & round it
+				var totalTime = SanitiseTimings(entries.timings.receive) + SanitiseTimings(entries.timings.wait) + SanitiseTimings(entries.timings.send) + SanitiseTimings(entries.timings.ssl) + SanitiseTimings(entries.timings.connect) + SanitiseTimings(entries.timings.dns);
+				totalTime = Math.round(totalTime*1000) / 1000;
+				
+				
+				//build diags text
+				var diagsText = "";
+				diagsText = diagsText + "<p class='diagsHeader'>Request</p>";
+				diagsText = diagsText + "<table>";
+				$.each(entries.request.headers, function(j, cont) {
+					diagsText = diagsText + "<tr><td class='diagsName'>" + cont.name + "</td><td class='diagsValue'>" + cont.value + "</td></tr>";
+				});
+				diagsText = diagsText + "</table>";
+				
+				diagsText = diagsText + "<p class='diagsHeader'>Response</p>";
+				diagsText = diagsText + "<table>";
+				$.each(entries.response.headers, function(j, cont) {
+					diagsText = diagsText + "<tr><td class='diagsName'>" + cont.name + "</td><td class='diagsValue'>" + cont.value + "</td></tr>";
+				});
+				diagsText = diagsText + "</table>";
+				
+				if ("text" in entries.response.content){
+						
+					if(entries.response.content.mimeType.substring(0,4) == "text") {
+						diagsText = diagsText + "<p class='diagsHeader'>Content</p>";
+						HTMLoutput = entries.response.content.text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+						diagsText = diagsText + "<pre>" + HTMLoutput + "</pre>";
+					}
+					
+					if(entries.response.content.mimeType.substring(0,5) == "image") {
+						diagsText = diagsText + "<p class='diagsHeader'>Content</p>";
+						HTMLoutput = '<img src="data:' + entries.response.content.mimeType + ';base64,' + entries.response.content.text + '">';
+						diagsText = diagsText + "<p>" + HTMLoutput + "</p>"; 	
+					}
+					
+				}
+				
+				//create object array
+				var entryData = { 
+					URL: entries.request.url,
+					TransSize: SanitiseSize(entries.response.bodySize),	
+					UncompSize: SanitiseSize(entries.response.content.size),
+					ReqHeaderSize: SanitiseSize(entries.request.headersSize),
+					ReqContentSize: SanitiseSize(entries.request.bodySize),	
+					RespHeaderSize: SanitiseSize(entries.response.headersSize),	
+					OffsetTime: SanitiseTimings(offset),
+					DNSTime: SanitiseTimings(entries.timings.dns),
+					ConnectTime: NewConnectTime,	
+					SSLConnTime: SanitiseTimings(entries.timings.ssl),
+					ReqSentTime: SanitiseTimings(entries.timings.send),	
+					DataStartTime: SanitiseTimings(entries.timings.wait),	
+					ContentTime: SanitiseTimings(entries.timings.receive),
+					TotalTime: totalTime,	
+					HTTPStatus: entries.response.status,
+					DiagHTML: diagsText,
+					StartTime: entries.startedDateTime
+				};
+				
+				//push objects into pages
+				pages.objects.push(entryData);
+			//
 			}
-			options.series[5].data.push(SanitiseTimings(val.timings.dns));
+		//
+		});
+		
+		//sort objects by offset ascending
+		pages.objects.sort(function(a,b) { return parseFloat(a.OffsetTime) - parseFloat(b.OffsetTime) } );
+		
+		//push page into main object	
+		HARpages.pages.push(pages);
+
+	});
+
 	
-			var startTime = new Date(val.startedDateTime);
-			var offset = startTime - basetime;
-			options.series[6].data.push(SanitiseTimings(offset));
+    
+	//Loop each page to draw Waterfall & table (tabs??)
+	x = 0;
+	
+	$.each(HARpages.pages, function(i,val) {
+		
+		x++;
+		
+		//draw waterfall
+		var ChartDIV = 'chart_' + x;
+		$('body').append('<div id="'+ChartDIV+'"></div>');
+		
+		var options = {
+	    	'chart':{
+				'zoomType':'xy',
+				'defaultSeriesType':'bar',
+				},
+			'exporting':{
+				'enabled':true
+				},
+			'title':{
+				'margin':60
+				},
+			'subtitle':{
+				'text':'',
+				'margin':10
+				},   
+			'legend':{
+				'align':'center',
+				'backgroundColor':'#FFFFFF',
+				'layout':'horizontal',
+				'reversed':true,
+				'y':-5
+				},
+			'credits':{
+				'enabled':true,
+				'href':'',
+				'position':{
+					'x':-15
+					},
+				'text':'Copyright NCC Group Website Performance'
+				},
+			'plotOptions':{
+				'series':{
+					'stacking':'normal',
+					'shadow':false,
+					'borderWidth':0,
+					'animation':false,
+					'pointPadding':0
+					}
+				},
+			'yAxis':{
+				'title':{
+					'text':'Seconds'
+					},
+				'plotLines': [
+					{
+			            'color': 'red',
+			            'width': 1,
+			            'label':{}
+			        },
+		            {
+		            	'color': 'green',
+			            'width': 1,
+			            'label':{}	
+		            	
+		            }] 
+			},
+			'xAxis':{
+				'title':{
+					'text':'Objects'
+					},
+				'categories': [],
+				'opposite':true
+			},
 			
-			var totalTime = SanitiseTimings(val.timings.receive) + SanitiseTimings(val.timings.wait) + SanitiseTimings(val.timings.send) + SanitiseTimings(val.timings.ssl) + SanitiseTimings(val.timings.connect) + SanitiseTimings(val.timings.dns);
+			'series':[
+				{
+			 	'name':'Content Download',
+	         	'color':'#FF8500',
+	         	'data':[]
+	        },
+			{
+				'name':'Data Start',
+				'color':'#66B3FF',
+				'data':[]
+	        },
+	      	{
+	        	'name':'Request Sent',
+	        	'color':'#00FF00',
+	         	'data':[]
+	       	},
+	        {
+	         	'name':'SSL Connect',
+	         	'color':'#FFCC33',
+	         	'data':[]
+	        },
+	        {
+	         	'name':'Connect',
+	         	'color':'#995500',
+	         	'data':[]
+	        },
+	        {
+	         	'name':'DNS',
+	         	'color':'#005CBB',
+	         	'data':[]
+	        },
+	      	{
+	         	'name':'Offset',
+	         	'pointWidth':0,
+	         	'color':'#FFFFFF',
+	         	'data':[]
+	        }
+	        ]
+	    };
+		
+		options.chart.renderTo = ChartDIV;
+		options.chart.height = 200 + (val.objects.length * 20);
+		options.chart.width = getViewportWidth() - 100;
+		options.title.text = "Component Timing Breakdown<br>" +  val.objects[0].URL;
+		
+		//onload
+		options.yAxis.plotLines[0].value = val.onLoadTime;
+		options.yAxis.plotLines[0].label.text = "onLoad (" + val.onLoadTime + ")";
+		
+		
+		//renderstart (WPT)
+		options.yAxis.plotLines[1].value = val.RenderStartTime;
+		options.yAxis.plotLines[1].label.text = "Render Start (" + val.RenderStartTime + ")";
 			
-			if (val.response.status > 399) {
+		$.each(val.objects, function(j,objects) {
+			if (objects.URL.substring(0,4) != "data" && objects.URL.substring(0,6) != "chrome") {
+					
+				options.xAxis.categories.push(TruncateURL(objects.URL));
+				
+				options.series[0].data.push(objects.ContentTime);
+				options.series[1].data.push(objects.DataStartTime);
+				options.series[2].data.push(objects.ReqSentTime);
+				options.series[3].data.push(objects.SSLConnTime);
+				options.series[4].data.push(objects.ConnectTime);
+				options.series[5].data.push(objects.DNSTime);
+				options.series[6].data.push(objects.OffsetTime);
+			}
+		});
+		
+		var chart = new Highcharts.Chart(options);
+		
+		//write table
+		var tableID = 'logs_' + x;
+		$('body').append('<div id="timingsTable"><table id="' + tableID +'" border="1"><thead><tr><th>Object URL</th><th>Trans.</th><th>Uncomp.</th><th>Req. Header</th><th>Req. Content</th><th>Resp. Header</th><th>Offset</th><th>DNS</th><th>Connect</th><th>SSL Conn.</th><th>Req. Sent</th><th>Data Start</th><th>Content</th><th>Total</th><th>Status</th><th>Diag</th></tr></thead></table></div>');
+		
+		hashtableID = '#' + tableID;
+		y=0;
+		$.each(val.objects, function(j,objects) {
+			y++;
+			if (objects.HTTPStatus > 399) {
 				trFormat = '<tr class="non200">';
 			} else {
 				trFormat = '<tr>';
-			}
-			
-			
-			if("ssl" in val.timings) {
-				var NewConnectTime = val.timings.connect - val.timings.ssl;
-			} else{
-				var NewConnectTime = val.timings.connect;
-			}
-			
-			
-			$('#logs').append(trFormat + "<td title='" + val.request.url + "'>" + TruncateURL(val.request.url) + "&nbsp;&nbsp;<a href='"+ val.request.url + "' target='_blank'><img src='./images/openpopup.png' alt='" + val.request.url + "'/></a></td><td>"+ SanitiseSize(val.response.bodySize) + "</td><td>"+ SanitiseSize(val.response.content.size) + "</td><td>" + SanitiseSize(val.request.headersSize) + "</td><td>" + SanitiseSize(val.request.bodySize) + "</td><td>" + SanitiseSize(val.response.headersSize) + "</td><td>" + SanitiseTimings(offset) + "</td><td>" + SanitiseTimings(val.timings.dns) + "</td><td>" + SanitiseTimings(NewConnectTime) + "</td><td>" + SanitiseTimings(val.timings.ssl) + "</td><td>" + SanitiseTimings(val.timings.send) + "</td><td>" + SanitiseTimings(val.timings.wait) + "</td><td>" + SanitiseTimings(val.timings.receive) + "</td><td>" + Math.round(totalTime * 1000) / 1000 + "</td><td>" + val.response.status + "</td><td><a onclick=\"$( '#diag_" + x +"' ).dialog({width:600, maxHeight:600});\"><img src='images/diagnostics_on.gif' alt='Diagnostics'></a></td></tr>");
-			
-			//Build the diags box...
-			var diagsText = "";
-			diagsText = diagsText + "<p class='diagsHeader'>Request</p>";
-			diagsText = diagsText + "<table>";
-			$.each(val.request.headers, function(j, cont) {
-				diagsText = diagsText + "<tr><td class='diagsName'>" + cont.name + "</td><td class='diagsValue'>" + cont.value + "</td></tr>";
-			});
-			diagsText = diagsText + "</table>";
-			
-			diagsText = diagsText + "<p class='diagsHeader'>Response</p>";
-			diagsText = diagsText + "<table>";
-			$.each(val.response.headers, function(j, cont) {
-				diagsText = diagsText + "<tr><td class='diagsName'>" + cont.name + "</td><td class='diagsValue'>" + cont.value + "</td></tr>";
-			});
-			diagsText = diagsText + "</table>";
-			
-			if ("text" in val.response.content){
-					
-				if(val.response.content.mimeType.substring(0,4) == "text") {
-					diagsText = diagsText + "<p class='diagsHeader'>Content</p>";
-					HTMLoutput = val.response.content.text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-					diagsText = diagsText + "<pre>" + HTMLoutput + "</pre>";
-				}
-				
-				if(val.response.content.mimeType.substring(0,5) == "image") {
-					diagsText = diagsText + "<p class='diagsHeader'>Content</p>";
-					HTMLoutput = '<img src="data:' + val.response.content.mimeType + ';base64,' + val.response.content.text + '">';
-					diagsText = diagsText + "<p>" + HTMLoutput + "</p>"; 	
-				}
-				
-			}
-			
-			$('body').append('<div id="diag_'+ x + '" title="Diagnostics for ' + val.request.url +'" style="display: none; width=250px;"><p>' + diagsText + '</p></div>');
-		
-		}
-	});
-	
-	var chart = new Highcharts.Chart(options);
-	
-	document.getElementById('timingsTable').style.display='block';
-}
+			}		
+			$(hashtableID).append(trFormat + "<td title='" + objects.URL + "'>" + TruncateURL(objects.URL) + "&nbsp;&nbsp;<a href='"+ objects.URL + "' target='_blank'><img src='./images/openpopup.png' alt='" + objects.URL + "'/></a></td><td>"+ objects.TransSize + "</td><td>"+ objects.UncompSize + "</td><td>" + objects.ReqHeaderSize + "</td><td>" + objects.ReqContentSize + "</td><td>" + objects.RespHeaderSize + "</td><td>" + objects.OffsetTime + "</td><td>" + objects.DNSTime + "</td><td>" + objects.ConnectTime + "</td><td>" + objects.SSLConnTime + "</td><td>" + objects.ReqSentTime + "</td><td>" + objects.DataStartTime + "</td><td>" + objects.ContentTime + "</td><td>" + objects.TotalTime + "</td><td>" + objects.HTTPStatus + "</td><td><a onclick=\"$( '#" + tableID + '_diag_'+ y + "' ).dialog({width:600, maxHeight:600});\"><img src='images/diagnostics_on.gif' alt='Diagnostics'></a></td></tr>");
+			$('body').append('<div id="' + tableID + '_diag_'+ y + '" title="Diagnostics for ' + objects.URL +'" style="display: none; width=250px;"><p>' + objects.DiagHTML + '</p></div>');
+		});
 
+	});
+
+}

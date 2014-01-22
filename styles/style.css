@@ -5,14 +5,14 @@ body {
 	font-variant: normal;
 }
 
-table#logs {
+table {
 	border-collapse: collapse;
 	border: 1px solid black;
 	width: 90%;
 	margin-left: 50px;
 }
 
-table#logs th {
+table th {
 	/* Table header */
 	background-attachment: scroll;
 	background-clip: border-box;
@@ -46,7 +46,7 @@ table#logs th {
 	vertical-align: middle;
 }
 
-table#logs td {
+table td {
 	/* Table data */
 	border-width: 1px;
 	border-style: solid;
@@ -66,24 +66,24 @@ table#logs td {
 	vertical-align: middle;
 }
 
-table#logs tbody tr:hover {
+table tbody tr:hover {
 	background-color: lightgrey;
 }
 
-table#logs tr.non200 {
+table tr.non200 {
 	color: red;
 }
 
-table#logs tr {
+table tr {
 	color: rgb(67, 67, 67);
 }
 
-table#logs tr:nth-child(odd){ 
+table tr:nth-child(odd){ 
 		background: #ffffff;
 	}
 
 
-table#logs tr:nth-child(even){
+table tr:nth-child(even){
 		background: rgb(253, 252, 247);
 	}
 

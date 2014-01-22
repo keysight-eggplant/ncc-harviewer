@@ -17,38 +17,15 @@
 	    <script type="text/javascript" src="./scripts/ncc_har.js"></script>
 	
 	</head>
-	<body onload="document.getElementById('timingsTable').style.display='none';">
-
+	<body>
+		<script>
+		  	$(function() {
+		   		$( "#accordion" ).accordion();
+		  	});
+	  	</script>
 		<h1>NCC Group Web Performance</h1>
 		<h2>HAR file viewer</h2>
 		<p>Drag &amp; drop your HAR file here...</p>
-
-		<div id="MyChart"></div>
-		<p>&nbsp;</p>
-		<div id="timingsTable">	
-	    <table id="logs" border="1">
-			<thead>
-				<tr>
-					<th>Object URL</th>
-					<th>Trans.</th>
-					<th>Uncomp.</th>
-					<th>Req. Header</th>
-					<th>Req. Content</th>
-					<th>Resp. Header</th>
-					<th>Offset</th>
-					<th>DNS</th>
-					<th>Connect</th>
-					<th>SSL Conn.</th>
-					<th>Req. Sent</th>
-					<th>Data Start</th>
-					<th>Content</th>
-					<th>Total</th>
-					<th>Status</th>
-					<th>Diag</th>
-				</tr>
-			</thead>   
-	    </table>
-	    </div>
 		
 		<script type="text/javascript">
 
@@ -70,7 +47,8 @@
 		        reader.onload = function (event) {
 		            var data = event.target.result;
 		            try {
-						drawWaterfall(data,"MyChart");
+						//drawWaterfall(data,"MyChart");
+						renderHAR(data);
 		            }
 		            catch(e) {
 		                alert(e);
@@ -81,7 +59,6 @@
 		        return false;
 		    };
 		</script>
-		
 	</body>
 </html>
 
