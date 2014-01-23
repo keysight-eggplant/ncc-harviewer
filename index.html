@@ -15,18 +15,16 @@
 		<script type="text/javascript" src="./scripts/exporting.js"></script>
 		<script type="text/javascript" src="./scripts/jquery-ui.js"></script>
 	    <script type="text/javascript" src="./scripts/ncc_har.js"></script>
+	    <script type="text/javascript" src="./scripts/jquery.collapsible.js"></script>
+	    
 	
 	</head>
 	<body>
-		<script>
-		  	$(function() {
-		   		$( "#accordion" ).accordion();
-		  	});
-	  	</script>
-		<h1>NCC Group Web Performance</h1>
-		<h2>HAR file viewer</h2>
-		<p>Drag &amp; drop your HAR file here...</p>
-		
+		<div id="header">
+			<h1>NCC Group Web Performance</h1>
+			<h2>HAR file viewer</h2>
+			<div id="instructions"><p>Drag &amp; drop your HAR file here...</p></div>
+		</div>
 		<script type="text/javascript">
 
 		    window.ondragover = function () {

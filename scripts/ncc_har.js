@@ -2,7 +2,9 @@
  * NCC Web Performance HAR Viewer
  * Requires: jQuery 1.8+, jQueryUI, Highcharts 3+
  * 
- * Version 2.0
+ * Version 2.1
+ * 
+ * http://github.com/brassic-lint/ncc-harviewer
  * 
  */
 
@@ -183,14 +185,21 @@ function renderHAR(harfile){
 	//Loop each page to draw Waterfall & table (tabs??)
 	x = 0;
 	
+	
 	$.each(HARpages.pages, function(i,val) {
 		
 		x++;
 		
-		//draw waterfall
+		//Set up the draw area
 		var ChartDIV = 'chart_' + x;
-		$('body').append('<div id="'+ChartDIV+'"></div>');
+		var tableID = 'logs_' + x;
+		hashtableID = '#' + tableID;
+		hashtabsID = '#tabs_' + x;
 		
+		$('body').append('<div class="page_collapsible" id="section' + x + '"><span></span>Step ' + x + '</div><div class="container"><div class="content"><div id="tabs_' + x + '"><ul><li><a href="#tabs-1">Waterfall</a></li><li><a href="#tabs-2">Table</a></li></ul><div id="tabs-1"><div id="'+ChartDIV+'"></div></div><div id="tabs-2"><div id="timingsTable"><table id="' + tableID +'" border="1"><thead><tr><th>Object URL</th><th>Trans.</th><th>Uncomp.</th><th>Req. Header</th><th>Req. Content</th><th>Resp. Header</th><th>Offset</th><th>DNS</th><th>Connect</th><th>SSL Conn.</th><th>Req. Sent</th><th>Data Start</th><th>Content</th><th>Total</th><th>Status</th><th>Diag</th></tr></thead></table></div></div></div></div></div>');
+		
+		
+		//draw waterfall
 		var options = {
 	    	'chart':{
 				'zoomType':'xy',
@@ -327,10 +336,7 @@ function renderHAR(harfile){
 		var chart = new Highcharts.Chart(options);
 		
 		//write table
-		var tableID = 'logs_' + x;
-		$('body').append('<div id="timingsTable"><table id="' + tableID +'" border="1"><thead><tr><th>Object URL</th><th>Trans.</th><th>Uncomp.</th><th>Req. Header</th><th>Req. Content</th><th>Resp. Header</th><th>Offset</th><th>DNS</th><th>Connect</th><th>SSL Conn.</th><th>Req. Sent</th><th>Data Start</th><th>Content</th><th>Total</th><th>Status</th><th>Diag</th></tr></thead></table></div>');
-		
-		hashtableID = '#' + tableID;
+
 		y=0;
 		$.each(val.objects, function(j,objects) {
 			y++;
@@ -342,7 +348,11 @@ function renderHAR(harfile){
 			$(hashtableID).append(trFormat + "<td title='" + objects.URL + "'>" + TruncateURL(objects.URL) + "&nbsp;&nbsp;<a href='"+ objects.URL + "' target='_blank'><img src='./images/openpopup.png' alt='" + objects.URL + "'/></a></td><td>"+ objects.TransSize + "</td><td>"+ objects.UncompSize + "</td><td>" + objects.ReqHeaderSize + "</td><td>" + objects.ReqContentSize + "</td><td>" + objects.RespHeaderSize + "</td><td>" + objects.OffsetTime + "</td><td>" + objects.DNSTime + "</td><td>" + objects.ConnectTime + "</td><td>" + objects.SSLConnTime + "</td><td>" + objects.ReqSentTime + "</td><td>" + objects.DataStartTime + "</td><td>" + objects.ContentTime + "</td><td>" + objects.TotalTime + "</td><td>" + objects.HTTPStatus + "</td><td><a onclick=\"$( '#" + tableID + '_diag_'+ y + "' ).dialog({width:600, maxHeight:600});\"><img src='images/diagnostics_on.gif' alt='Diagnostics'></a></td></tr>");
 			$('body').append('<div id="' + tableID + '_diag_'+ y + '" title="Diagnostics for ' + objects.URL +'" style="display: none; width=250px;"><p>' + objects.DiagHTML + '</p></div>');
 		});
-
+		$( hashtabsID ).tabs();
 	});
-
+	$(function() {
+		$( ".page_collapsible" ).collapsible();
+		$("#instructions").hide();
+		
+	});
 }
