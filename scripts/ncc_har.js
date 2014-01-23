@@ -107,6 +107,9 @@ function renderHAR(harfile){
 					var NewConnectTime = SanitiseTimings(entries.timings.connect);
 				}
 				
+				NewConnectTime = Math.round(NewConnectTime * 1000) / 1000;
+				
+				
 				//calculate totaltime & round it
 				var totalTime = SanitiseTimings(entries.timings.receive) + SanitiseTimings(entries.timings.wait) + SanitiseTimings(entries.timings.send) + SanitiseTimings(entries.timings.ssl) + SanitiseTimings(entries.timings.connect) + SanitiseTimings(entries.timings.dns);
 				totalTime = Math.round(totalTime*1000) / 1000;
